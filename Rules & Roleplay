@@ -1,0 +1,32 @@
+import re
+
+def detect_rules_and_roleplay(prompt):
+    """
+    Identifies if a prompt contains both rules and roleplay instructions.
+
+    Args:
+        prompt: The input prompt to be analyzed (assumed to be a string).
+
+    Returns:
+        A boolean indicating whether the prompt is an anomaly.
+    """
+
+    # Define keywords typically associated with rules and roleplay instructions
+    rules_keywords = ['must', 'must not', 'should', 'should not']
+    roleplay_keywords = ['imagine', 'pretend', 'roleplay', 'act as']
+
+    # Check if the prompt contains both types of keywords
+    contains_rules = any(re.search(r'\b' + keyword.lower() + r'\b', prompt.lower()) for keyword in rules_keywords)
+    contains_roleplay = any(re.search(r'\b' + keyword.lower() + r'\b', prompt.lower()) for keyword in roleplay_keywords)
+
+    # If the prompt contains both types of keywords, it is considered an anomaly
+    is_anomaly = contains_rules and contains_roleplay
+
+    return is_anomaly
+
+# Sample prompt that combines rules and roleplay instructions:
+prompt = "Imagine you are a dragon, but you must follow these rules: you must not breathe fire unless absolutely necessary, and you should always protect those who are weaker than you."
+
+is_anomaly = detect_rules_and_roleplay(prompt)
+
+print("Is the prompt an anomaly (contains both rules and roleplay)?", is_anomaly)
