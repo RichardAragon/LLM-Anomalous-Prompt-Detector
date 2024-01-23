@@ -1,3 +1,6 @@
+import nltk
+from IPython.display import HTML
+
 def detect_word_frequency_outliers(text, dynamic_threshold):
     """
     Identifies word frequency outliers within a text using a dynamic threshold.
@@ -20,6 +23,24 @@ def detect_word_frequency_outliers(text, dynamic_threshold):
     threshold = dynamic_threshold(list(freq_dist.values()))
 
     # Identify outliers based on the threshold
-    outliers = [word for word, freq in freq_dist.items() if freq > threshold]
+    outliers = [word for word, freq in freq_dist.items() if freq > threshold]  # Modified for high-frequency outliers
 
     return outliers
+
+def simple_mean_threshold(values):
+    """A basic threshold function that uses the mean as the threshold."""
+    return np.mean(values)
+
+text = "This is a sample text with some words appearing more often than others. The word 'is' is repeated multiple times, making it an outlier."
+outlier_words = detect_word_frequency_outliers(text, simple_mean_threshold)
+
+print("Detected outlier words:")
+for outlier in outlier_words:
+    print(f"- {outlier}")
+
+# Highlighting within the text (optional):
+highlighted_text = text
+for outlier in outlier_words:
+    highlighted_text = highlighted_text.replace(outlier, f"<mark>{outlier}</mark>")
+
+print(HTML(highlighted_text))
