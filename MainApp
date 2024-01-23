@@ -1,0 +1,102 @@
+import numpy as np
+import nltk
+from sentence_transformers import SentenceTransformer
+from sklearn.metrics.pairwise import cosine_similarity
+import re
+
+def detect_outliers(data, dynamic_threshold, outlier_type):
+    """
+    Identifies outliers within a data using a dynamic threshold.
+
+    Args:
+        data: The input data to be analyzed for outliers.
+        dynamic_threshold: A function that calculates the threshold based on the data.
+        outlier_type: The type of outlier detection to perform.
+
+    Returns:
+        A list of outlier values.
+    """
+
+    if outlier_type == 'statistical':
+        # Calculate the dynamic threshold using the provided function
+        threshold = dynamic_threshold(data)
+
+        # Identify outliers based on the threshold
+        outliers = [x for x in data if x > threshold]
+
+    elif outlier_type == 'nlp':
+        # Split the paragraph into sentences using NLTK
+        sentences = nltk.sent_tokenize(data)
+
+        # Initialize a sentence transformer model
+        model = SentenceTransformer('all-MiniLM-L6-v2')
+
+        # Compute sentence embeddings for all sentences in the paragraph
+        embeddings = model.encode(sentences)
+
+        # Calculate pairwise cosine similarities between sentence embeddings
+        similarities = cosine_similarity(embeddings)
+
+        # Calculate mean similarity for each sentence
+        mean_similarities = np.mean(similarities, axis=1)
+
+        # Calculate the dynamic threshold using the provided function
+        threshold = dynamic_threshold(mean_similarities)
+
+        # Identify outliers based on the threshold
+        outliers = [sentences[i] for i, sim in enumerate(mean_similarities) if sim < threshold]
+
+    elif outlier_type == 'length':
+        # Split the text into sentences
+        sentences = nltk.sent_tokenize(data)
+
+        # Calculate lengths of all sentences
+        lengths = [len(sentence) for sentence in sentences]
+
+        # Calculate the dynamic threshold using the provided function
+        threshold = dynamic_threshold(lengths)
+
+        # Identify outliers based on the threshold
+        outliers = [sentences[i] for i, length in enumerate(lengths) if length > threshold]
+
+    elif outlier_type == 'word_frequency':
+        # Tokenize the text into words
+        words = nltk.word_tokenize(data)
+
+        # Calculate frequencies of all words
+        freq_dist = nltk.FreqDist(words)
+
+        # Calculate the dynamic threshold using the provided function
+        threshold = dynamic_threshold(list(freq_dist.values()))
+
+        # Identify outliers based on the threshold
+        outliers = [word for word, freq in freq_dist.items() if freq > threshold]
+
+    elif outlier_type == 'rules_and_roleplay':
+        # Define keywords typically associated with rules and roleplay instructions
+        rules_keywords = ['must', 'must not', 'should', 'should not']
+        roleplay_keywords = ['imagine', 'pretend', 'roleplay', 'act as']
+
+        # Check if the prompt contains both types of keywords
+        contains_rules = any(re.search(r'\b' + keyword.lower() + r'\b', data.lower()) for keyword in rules_keywords)
+        contains_roleplay = any(re.search(r'\b' + keyword.lower() + r'\b', data.lower()) for keyword in roleplay_keywords)
+
+        # If the prompt contains both types of keywords, it is considered an anomaly
+        is_anomaly = contains_rules and contains_roleplay
+
+        outliers = [is_anomaly]
+
+    elif outlier_type == 'color_change_code':
+        # Regex patterns for HTML and CSS color-changing code:
+        html_pattern = r'<span\s+style="color:\s*([^"]+)">'
+        css_pattern = r'\bcolor:\s*([^;]+)\b'  # Matches color properties within CSS blocks
+
+        matches = []
+        for pattern in [html_pattern, css_pattern]:
+            matches.extend(re.findall(pattern, data))
+
+        contains_color_change_code = len(matches) > 0
+
+        outliers = [contains_color_change_code, matches]
+
+    return outliers
