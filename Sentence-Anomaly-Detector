@@ -1,0 +1,51 @@
+import nltk
+
+def detect_nlp_outliers(paragraph, dynamic_threshold):
+    """
+    Identifies statistical outliers within a paragraph using a dynamic threshold.
+
+    Args:
+        paragraph: The input paragraph to be analyzed for outliers (assumed to be a string).
+        dynamic_threshold: A function that calculates the threshold based on the data.
+
+    Returns:
+        A list of outlier sentences.
+    """
+
+    # Split the paragraph into sentences using NLTK
+    sentences = nltk.sent_tokenize(paragraph)
+
+    # Initialize a sentence transformer model
+    model = SentenceTransformer('all-MiniLM-L6-v2')
+
+    # Compute sentence embeddings for all sentences in the paragraph
+    embeddings = model.encode(sentences)
+
+    # Calculate pairwise cosine similarities between sentence embeddings
+    similarities = cosine_similarity(embeddings)
+
+    # Calculate mean similarity for each sentence
+    mean_similarities = np.mean(similarities, axis=1)
+
+    # Calculate the dynamic threshold using the provided function
+    threshold = dynamic_threshold(mean_similarities)
+
+    # Identify outliers based on the threshold
+    outliers = [sentences[i] for i, sim in enumerate(mean_similarities) if sim < threshold]
+
+    return outliers
+
+    paragraph = "This is a sample paragraph. It contains some typical sentences. However, this sentence is quite different."
+outliers = detect_nlp_outliers(paragraph, dynamic_threshold)
+
+print("Detected outlier sentences:")
+for outlier in outliers:
+    print(f"- {outlier}")
+
+from IPython.display import HTML
+
+highlighted_paragraph = paragraph
+for outlier in outliers:
+    highlighted_paragraph = highlighted_paragraph.replace(outlier, f"<mark>{outlier}</mark>")
+
+HTML(highlighted_paragraph)
