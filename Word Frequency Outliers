@@ -1,0 +1,25 @@
+def detect_word_frequency_outliers(text, dynamic_threshold):
+    """
+    Identifies word frequency outliers within a text using a dynamic threshold.
+
+    Args:
+        text: The input text to be analyzed for outliers (assumed to be a string).
+        dynamic_threshold: A function that calculates the threshold based on the data.
+
+    Returns:
+        A list of outlier words.
+    """
+
+    # Tokenize the text into words
+    words = nltk.word_tokenize(text)
+
+    # Calculate frequencies of all words
+    freq_dist = nltk.FreqDist(words)
+
+    # Calculate the dynamic threshold using the provided function
+    threshold = dynamic_threshold(list(freq_dist.values()))
+
+    # Identify outliers based on the threshold
+    outliers = [word for word, freq in freq_dist.items() if freq > threshold]
+
+    return outliers
