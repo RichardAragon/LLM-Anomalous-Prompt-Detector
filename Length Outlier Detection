@@ -1,0 +1,40 @@
+def detect_length_outliers(text, dynamic_threshold):
+    """
+    Identifies length outliers within a text using a dynamic threshold.
+
+    Args:
+        text: The input text to be analyzed for outliers (assumed to be a string).
+        dynamic_threshold: A function that calculates the threshold based on the data.
+
+    Returns:
+        A list of outlier sentences.
+    """
+
+    # Split the text into sentences
+    sentences = nltk.sent_tokenize(text)
+
+    # Calculate lengths of all sentences
+    lengths = [len(sentence) for sentence in sentences]
+
+    # Calculate the dynamic threshold using the provided function
+    threshold = dynamic_threshold(lengths)
+
+    # Identify outliers based on the threshold
+    outliers = [sentences[i] for i, length in enumerate(lengths) if length > threshold]
+
+    return outliers
+
+    paragraph = "This is a sample paragraph. It contains some typical sentences. However, this sentence is quite different."
+outliers = detect_nlp_outliers(paragraph, dynamic_threshold)
+
+print("Detected outlier sentences:")
+for outlier in outliers:
+    print(f"- {outlier}")
+
+from IPython.display import HTML
+
+highlighted_paragraph = paragraph
+for outlier in outliers:
+    highlighted_paragraph = highlighted_paragraph.replace(outlier, f"<mark>{outlier}</mark>")
+
+HTML(highlighted_paragraph)
