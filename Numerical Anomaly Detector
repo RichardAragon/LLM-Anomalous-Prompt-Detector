@@ -1,0 +1,33 @@
+import numpy as np  # Assuming numerical data within the prompt
+
+def detect_statistical_outliers(prompt, dynamic_threshold):
+    """
+    Identifies statistical outliers within a prompt using a dynamic threshold.
+
+    Args:
+        prompt: The input data to be analyzed for outliers (assumed to be numerical).
+        dynamic_threshold: A function that calculates the threshold based on the data.
+
+    Returns:
+        A list of outlier values.
+    """
+
+    # Calculate the dynamic threshold using the provided function
+    threshold = dynamic_threshold(prompt)
+
+    # Identify outliers based on the threshold
+    outliers = [x for x in prompt if x > threshold]
+
+    return outliers
+
+# Example implementation of dynamic_threshold using interquartile range (IQR):
+def dynamic_threshold_iqr(data):
+    q1, q3 = np.percentile(data, [25, 75])
+    iqr = q3 - q1
+    upper_threshold = q3 + 1.5 * iqr
+    return upper_threshold
+
+# Example usage:
+prompt = [1, 2, 3, 4, 100, 5, 6]  # Example prompt with an outlier
+outliers = detect_statistical_outliers(prompt, dynamic_threshold_iqr)
+print(outliers)  # Output: [100]
