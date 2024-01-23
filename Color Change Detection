@@ -1,0 +1,33 @@
+import re
+
+def detect_color_change_code(text):
+    """
+    Identifies if a text contains HTML or CSS code to change the text color.
+    """
+
+    # Regex patterns for HTML and CSS color-changing code:
+    html_pattern = r'<span\s+style="color:\s*([^"]+)">'
+    css_pattern = r'\bcolor:\s*([^;]+)\b'  # Matches color properties within CSS blocks
+
+    matches = []
+    for pattern in [html_pattern, css_pattern]:
+        matches.extend(re.findall(pattern, text))
+
+    contains_color_change_code = len(matches) > 0
+
+    return contains_color_change_code, matches
+
+# Example text with HTML and CSS code:
+example_text = """
+<span style="color: blue;">This text is blue.</span>
+<p style="color: green;">This text is green.</p>
+.red-text { color: red; }
+"""
+
+contains_code, colors = detect_color_change_code(example_text)
+
+if contains_code:
+    print("Color-changing code detected!")
+    print("Detected colors:", colors)
+else:
+    print("No color-changing code found.")
